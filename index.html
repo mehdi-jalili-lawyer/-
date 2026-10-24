@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دبیرستان و هنرستان امام حسن (ع) - سامانه جامع مدیریتی و آموزشی</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#0f172a',
+                            900: '#020617',
+                        },
+                        royal: {
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                        },
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    },
+                    fontFamily: {
+                        nazanin: ['B Nazanin', 'Vazirmatn', 'Tahoma', 'sans-serif'],
+                        titr: ['B Titr', 'Vazirmatn', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Vazirmatn', 'B Nazanin', Tahoma, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            scroll-behavior: smooth;
+        }
+
+        .font-titr {
+            font-family: 'B Titr', 'Vazirmatn', sans-serif;
+            font-weight: 700;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .glass-header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .modern-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modern-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+        }
+
+        .logo-container {
+            position: relative;
+            transition: all 0.4s ease;
+        }
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+        .logo-glow {
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+        }
+
+        #context-menu {
+            position: absolute;
+            display: none;
+            z-index: 1000;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printable-report-card, #printable-report-card * { visibility: visible; }
+            #printable-report-card {
+                position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; padding: 20px;
+            }
+            .no-print { display: none !important; }
+        }
+        
+/* ظاهر مدرن و یکپارچه سایت */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background:
+        radial-gradient(ellipse at top right, rgba(219, 234, 254, 0.65), transparent 40%),
+        #f5f8fc;
+    line-height: 1.8;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        filter 0.25s ease;
+}
+
+button:hover {
+    filter: brightness(1.05);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.glass-header {
+    background: rgba(8, 22, 48, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 30px rgba(2, 6, 23, 0.14);
+}
+
+.modern-card {
+    border-radius: 22px;
+    box-shadow: 0 5px 22px rgba(15, 23, 42, 0.045);
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.modern-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.11);
+}
+
+input,
+select,
+textarea {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+    outline: none;
+}
+
+.logo-container {
+    transition: transform 0.3s ease;
+}
+
+.logo-container:hover {
+    transform: translateY(-2px) scale(1.04);
+}
+
+@media (max-width: 640px) {
+    main {
+        padding-top: 1.25rem;
+    }
+
+    .font-titr {
+        line-height: 1.7;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* کارت‌های مدرن با افکت شناور */
+.grid > div,
+.grid > a {
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 6px 22px rgba(15, 23, 42, 0.05);
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease,
+        border-color 0.3s ease;
+}
+
+.grid > div:hover,
+.grid > a:hover {
+    transform: translateY(-5px);
+    border-color: rgba(212, 175, 55, 0.65);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.10);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .grid > div,
+    .grid > a {
+        transition: none;
+    }
+
+    .grid > div:hover,
+    .grid > a:hover {
+        transform: none;
+    }
+}
+
+
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between selection:bg-gold-500 selection:text-white">
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="fixed top-5 left-5 z-50 flex flex-col gap-2 max-w-sm"></div>
+
+    <!-- Context Menu for Quick Actions -->
+    <div id="context-menu" class="bg-white border border-slate-200 rounded-xl shadow-2xl py-2 w-48 text-slate-800 font-medium">
+        <button onclick="handleContextMenuAction('edit')" class="w-full text-right px-4 py-2 hover:bg-slate-100 flex items-center gap-2 text-royal-700">
+            <i class="fa-solid fa-pen-to-square"></i> ویرایش اطلاعات
+        </button>
+        <button onclick="handleContextMenuAction('delete')" class="w-full text-right px-4 py-2 hover:bg-red-50 flex items-center gap-2 text-red-600">
+            <i class="fa-solid fa-trash"></i> حذف رکورد
+        </button>
+    </div>
+
+    <!-- MAIN NAVBAR (بدون دکمه کلاس مجازی عمومی) -->
+    <header class="glass-header text-white sticky top-0 z-40 border-b border-gold-500/30 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3.5 cursor-pointer group" onclick="switchView('public')">
+                    <div class="logo-container w-12 h-12 rounded-xl bg-gradient-to-br from-gold-400 via-gold-500 to-amber-600 p-0.5 shadow-lg flex items-center justify-center">
+                        <div class="w-full h-full bg-navy-900 rounded-[10px] overflow-hidden flex items-center justify-center p-1 border border-gold-400/30">
+                            <img src="school.png" alt="لوگوی دبیرستان امام حسن" class="w-full h-full object-contain filter drop-shadow">
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="font-titr text-lg sm:text-xl text-gold-400 tracking-wide group-hover:text-gold-300 transition">دبیرستان و هنرستان امام حسن (ع)</h1>
+                        <p class="text-xs text-slate-300 font-light">سامانه هوشمند مدیریتی و آموزشی</p>
+                    </div>
+                </div>
+
+                <nav class="hidden md:flex items-center gap-3">
+                    <button onclick="switchView('public')" class="px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-house"></i> صفحه اصلی
+                    </button>
+                    <button onclick="openLoginModal('admin')" class="px-4 py-2 rounded-lg text-sm font-medium bg-gold-500 hover:bg-gold-600 text-slate-950 font-bold shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield"></i> ورود مدیر
+                    </button>
+                    <button onclick="openLoginModal('teacher')" class="px-4 py-2 rounded-lg text-sm font-medium bg-royal-600 hover:bg-royal-700 text-white shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-chalkboard-user"></i> ورود معلم
+                    </button>
+                    <button onclick="openLoginModal('student')" class="px-4 py-2 rounded-lg text-sm font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-graduation-cap"></i> ورود دانش‌آموز
+                    </button>
+                </nav>
+
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+
+            <div id="mobile-menu" class="hidden md:hidden pb-4 space-y-2 border-t border-slate-800 pt-3">
+                <button onclick="switchView('public')" class="w-full text-right px-3 py-2 rounded-lg hover:bg-slate-800">صفحه اصلی</button>
+                <button onclick="openLoginModal('admin')" class="w-full text-right px-3 py-2 rounded-lg bg-gold-500 text-slate-900 font-bold">ورود مدیر</button>
+                <button onclick="openLoginModal('teacher')" class="w-full text-right px-3 py-2 rounded-lg bg-royal-600 text-white">ورود معلم</button>
+                <button onclick="openLoginModal('student')" class="w-full text-right px-3 py-2 rounded-lg bg-slate-800 text-white">ورود دانش‌آموز</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ================= PUBLIC PORTAL ================= -->
+        <section id="view-public" class="space-y-10 animate-fade-in">
+            <!-- Hero Section -->
+            <div class="relative rounded-3xl bg-gradient-to-r from-navy-900 via-royal-800 to-navy-900 text-white p-6 sm:p-8 shadow-2xl overflow-hidden border border-gold-500/20">
+                <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    
+                    <!-- سمت راست: لوگوی مدرسه -->
+                    <div class="flex-shrink-0 flex items-center justify-center">
+                        <div class="p-1.5 rounded-2xl bg-slate-900/60 border border-gold-500/30 shadow-lg logo-glow">
+                            <img src="school.png" alt="لوگوی مدرسه" class="h-20 sm:h-28 w-auto max-w-[140px] sm:max-w-[180px] object-contain rounded-xl">
+                        </div>
+                    </div>
+
+                    <!-- وسط: تصویر تایپوگرافی نام مدرسه -->
+                    <div class="text-center flex-grow space-y-3 max-w-xl mx-auto">
+                        <img src="typography.png" alt="تایپوگرافی دبیرستان امام حسن (ع)" class="h-14 sm:h-20 mx-auto object-contain filter drop-shadow-lg">
+                        
+                        <p class="text-slate-200 text-xs sm:text-sm leading-relaxed font-light">
+                            به سامانه اطلاع‌رسانی و آموزشی خوش آمدید
+                            <br>
+                            <span class="text-slate-300 text-[11px] opacity-90">پیشرو در ارائه خدمات آموزشی، مهارتی و تربیتی نوآورانه با کادر مجرب</span>
+                        </p>
+                        <div class="pt-1 flex flex-wrap justify-center gap-3">
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- سمت چپ: عکس رهبران -->
+                    <div class="flex-shrink-0 flex items-center justify-center">
+                        <div class="p-1 rounded-2xl border border-gold-500/30 shadow-xl bg-slate-900/60">
+                            <img src="leaders.png" alt="تصویر رهبران انقلاب اسلامی" class="h-20 sm:h-28 w-auto max-w-[150px] sm:max-w-[200px] object-cover rounded-xl filter drop-shadow">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- News & Announcements -->
+            <div class="space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+                    <h3 class="font-titr text-2xl text-slate-900 flex items-center gap-3">
+                        <i class="fa-solid fa-newspaper text-gold-600"></i> اخبار، اطلاعیه‌ها و گزارش فعالیت‌ها
+                    </h3>
+                    <span class="text-xs text-slate-500">بروزرسانی روزانه</span>
+                </div>
+
+                <div id="public-news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic News -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ADMIN PANEL ================= -->
+        <section id="view-admin" class="hidden space-y-8 animate-fade-in">
+            <div class="bg-navy-800 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-b-4 border-gold-500">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-full bg-gold-500 text-slate-900 flex items-center justify-center text-2xl font-bold">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-titr text-2xl text-gold-400">پنل مدیریت دبیرستان و هنرستان امام حسن (ع)</h2>
+                        <p class="text-xs text-slate-300">مدیریت اعضا، کارنامه‌ها، حضور و غیاب و اخبار</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openChangePasswordModal()" class="bg-slate-700 hover:bg-slate-600 text-xs text-white px-3 py-2 rounded-lg transition flex items-center gap-1">
+                        <i class="fa-solid fa-key"></i> تغییر رمز عبور
+                    </button>
+                    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-xs text-white px-3 py-2 rounded-lg transition flex items-center gap-1">
+                        <i class="fa-solid fa-sign-out-alt"></i> خروج از پنل
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Navigation Grid -->
+            <div id="admin-dashboard-menu" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <button onclick="showAdminSection('students')" class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm modern-card hover:border-royal-600 text-right group">
+                    <div class="w-12 h-12 rounded-xl bg-royal-600/10 text-royal-600 group-hover:bg-royal-600 group-hover:text-white flex items-center justify-center text-2xl mb-4 transition">
+                        <i class="fa-solid fa-user-graduate"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-1">سازماندهی دانش‌آموزان</h3>
+                    <p class="text-xs text-slate-500">ثبت‌نام، ویرایش، حذف، جستجو و خروجی اکسل دانش‌آموزان</p>
+                </button>
+
+                <button onclick="showAdminSection('teachers')" class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm modern-card hover:border-gold-600 text-right group">
+                    <div class="w-12 h-12 rounded-xl bg-gold-500/10 text-gold-600 group-hover:bg-gold-500 group-hover:text-white flex items-center justify-center text-2xl mb-4 transition">
+                        <i class="fa-solid fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-1">سازماندهی معلمان</h3>
+                    <p class="text-xs text-slate-500">تعریف کد پرسنلی، کلاس‌ها، پایه‌ها و خروجی لیست معلمان</p>
+                </button>
+
+                <button onclick="showAdminSection('attendance')" class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm modern-card hover:border-emerald-600 text-right group">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-600/10 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-2xl mb-4 transition">
+                        <i class="fa-solid fa-clipboard-user"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-1">گزارش حضور و غیاب</h3>
+                    <p class="text-xs text-slate-500">مشاهده لیست غیبت‌ها، استعلام و حذف رکوردهای روزانه</p>
+                </button>
+
+                <button onclick="showAdminSection('report-cards')" class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm modern-card hover:border-purple-600 text-right group">
+                    <div class="w-12 h-12 rounded-xl bg-purple-600/10 text-purple-600 group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center text-2xl mb-4 transition">
+                        <i class="fa-solid fa-file-invoice font-bold"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-1">کارنامه ماهانه دانش‌آموزان</h3>
+                    <p class="text-xs text-slate-500">استعلام نمرات مهر تا اردیبهشت و پرینت کارنامه رسمی</p>
+                </button>
+
+                <button onclick="showAdminSection('news')" class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm modern-card hover:border-amber-600 text-right group">
+                    <div class="w-12 h-12 rounded-xl bg-amber-600/10 text-amber-600 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center text-2xl mb-4 transition">
+                        <i class="fa-solid fa-bullhorn"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-1">ثبت اخبار و فعالیت‌ها</h3>
+                    <p class="text-xs text-slate-500">مدیریت اطلاعیه‌ها، تصاویر و اطلاعیه‌های صفحه اصلی</p>
+                </button>
+
+                <button onclick="showAdminSection('gate-barcode')" class="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm modern-card hover:border-indigo-600 text-right group">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-600/10 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center text-2xl mb-4 transition">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-1">بارکدخوان ورود و خروج</h3>
+                    <p class="text-xs text-slate-500">ثبت هوشمند ورود/خروج دانش‌آموز و ارسال پیامک روبیکا</p>
+                </button>
+            </div>
+
+            <!-- ADMIN SUB-SECTIONS CONTAINER -->
+            <div id="admin-subsections-container">
+                <!-- 1. STUDENTS -->
+                <div id="admin-sec-students" class="admin-sec hidden space-y-6">
+                    <div class="flex items-center justify-between border-b pb-4">
+                        <h3 class="font-titr text-xl text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-user-graduate text-royal-600"></i> فرم ثبت و مدیریت دانش‌آموزان
+                        </h3>
+                        <button onclick="backToAdminDashboard()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs px-4 py-2 rounded-xl transition flex items-center gap-1 font-semibold">
+                            <i class="fa-solid fa-arrow-left"></i> بازگشت به پنل
+                        </button>
+                    </div>
+
+                    <form id="student-form" onsubmit="handleSaveStudent(event)" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="hidden" id="student-edit-index" value="-1">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">نام و نام خانوادگی <span class="text-red-500">*</span></label>
+                            <input type="text" id="st-fullname" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-royal-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">کد ملی <span class="text-red-500">*</span></label>
+                            <input type="text" id="st-nationalid" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-royal-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">کد دانش‌آموزی <span class="text-red-500">*</span></label>
+                            <input type="text" id="st-code" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-royal-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">شماره تماس ولی (۱) (اختیاری)</label>
+                            <input type="text" id="st-phone1" placeholder="0912..." class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-royal-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">شماره تماس ولی (۲) (اختیاری)</label>
+                            <input type="text" id="st-phone2" placeholder="0912..." class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-royal-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">کلاس <span class="text-red-500">*</span></label>
+                            <input type="text" id="st-class" placeholder="مثلا ۱۰۱" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-royal-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">پایه تحصیلی <span class="text-red-500">*</span></label>
+                            <select id="st-grade" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-royal-600 outline-none">
+                                <option value="دهم">دهم</option>
+                                <option value="یازدهم">یازدهم</option>
+                                <option value="دوازدهم">دوازدهم</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">بارگذاری عکس دانش‌آموز</label>
+                            <input type="file" id="st-photo" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-royal-600 file:text-white hover:file:bg-royal-700">
+                        </div>
+                        <div class="md:col-span-3 flex justify-end gap-2 pt-2">
+                            <button type="submit" class="bg-royal-600 hover:bg-royal-700 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition shadow flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i> ثبت مشخصات دانش‌آموز
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="bg-slate-100 p-4 rounded-2xl space-y-3">
+                        <div class="flex flex-col md:flex-row gap-3 items-center justify-between">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full md:w-auto flex-grow">
+                                <input type="text" id="src-st-name" oninput="renderStudentsTable()" placeholder="جستجو نام و نام خانوادگی..." class="border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                                <input type="text" id="src-st-nationalid" oninput="renderStudentsTable()" placeholder="جستجو با کدملی..." class="border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                                <input type="text" id="src-st-code" oninput="renderStudentsTable()" placeholder="جستجو با کد دانش‌آموزی..." class="border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                            </div>
+                            <button onclick="exportStudentsExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-2 shadow w-full md:w-auto justify-center">
+                                <i class="fa-solid fa-file-excel text-base"></i> خروجی Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-800 text-slate-200">
+                                <tr>
+                                    <th class="p-3">عکس</th>
+                                    <th class="p-3">نام و نام خانوادگی</th>
+                                    <th class="p-3">کد ملی</th>
+                                    <th class="p-3">کد دانش‌آموزی</th>
+                                    <th class="p-3">پایه/کلاس</th>
+                                    <th class="p-3">شماره ولی ۱</th>
+                                    <th class="p-3">عملیات (یا راست‌کلیک)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-table-body" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. TEACHERS -->
+                <div id="admin-sec-teachers" class="admin-sec hidden space-y-6">
+                    <div class="flex items-center justify-between border-b pb-4">
+                        <h3 class="font-titr text-xl text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-chalkboard-teacher text-gold-600"></i> مدیریت و سازماندهی معلمان
+                        </h3>
+                        <button onclick="backToAdminDashboard()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs px-4 py-2 rounded-xl transition flex items-center gap-1 font-semibold">
+                            <i class="fa-solid fa-arrow-left"></i> بازگشت به پنل
+                        </button>
+                    </div>
+
+                    <form id="teacher-form" onsubmit="handleSaveTeacher(event)" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="hidden" id="teacher-edit-index" value="-1">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">نام و نام خانوادگی <span class="text-red-500">*</span></label>
+                            <input type="text" id="tc-fullname" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-gold-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">کد ملی <span class="text-red-500">*</span></label>
+                            <input type="text" id="tc-nationalid" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-gold-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">کد پرسنلی (اختیاری)</label>
+                            <input type="text" id="tc-pcode" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-gold-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">شماره تماس <span class="text-red-500">*</span></label>
+                            <input type="text" id="tc-phone" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-gold-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">کلاس‌ها (با کاما جدا کنید)</label>
+                            <input type="text" id="tc-classes" placeholder="مثال: ۱۰۱, ۱۰۲" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-gold-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">پایه‌ها (با کاما جدا کنید)</label>
+                            <input type="text" id="tc-grades" placeholder="مثال: دهم, یازدهم" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-gold-500 outline-none">
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">بارگذاری عکس پرسنلی معلم</label>
+                            <input type="file" id="tc-photo" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gold-500 file:text-slate-950 hover:file:bg-gold-600">
+                        </div>
+                        <div class="md:col-span-3 flex justify-end gap-2 pt-2">
+                            <button type="submit" class="bg-gold-500 hover:bg-gold-600 text-slate-950 font-bold text-sm px-6 py-2.5 rounded-xl transition shadow flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i> ثبت مشخصات معلم
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="bg-slate-100 p-4 rounded-2xl flex flex-col md:flex-row gap-3 justify-between items-center">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full md:w-auto flex-grow">
+                            <input type="text" id="src-tc-name" oninput="renderTeachersTable()" placeholder="جستجو با نام..." class="border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                            <input type="text" id="src-tc-nationalid" oninput="renderTeachersTable()" placeholder="جستجو با کدملی..." class="border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                            <input type="text" id="src-tc-pcode" oninput="renderTeachersTable()" placeholder="جستجو با کد پرسنلی..." class="border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                        </div>
+                        <button onclick="exportTeachersExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-2 shadow w-full md:w-auto justify-center">
+                            <i class="fa-solid fa-file-excel"></i> خروجی Excel
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-800 text-slate-200">
+                                <tr>
+                                    <th class="p-3">عکس</th>
+                                    <th class="p-3">نام و نام خانوادگی</th>
+                                    <th class="p-3">کد ملی</th>
+                                    <th class="p-3">کد پرسنلی</th>
+                                    <th class="p-3">شماره تماس</th>
+                                    <th class="p-3">کلاس‌ها/پایه‌ها</th>
+                                    <th class="p-3">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teachers-table-body" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. ATTENDANCE (ADMIN) -->
+                <div id="admin-sec-attendance" class="admin-sec hidden space-y-6">
+                    <div class="flex items-center justify-between border-b pb-4">
+                        <h3 class="font-titr text-xl text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-clipboard-user text-emerald-600"></i> گزارش و مدیریت حضور و غیاب روزانه
+                        </h3>
+                        <button onclick="backToAdminDashboard()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs px-4 py-2 rounded-xl transition flex items-center gap-1 font-semibold">
+                            <i class="fa-solid fa-arrow-left"></i> بازگشت به پنل
+                        </button>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 shadow-sm">
+                        <h4 class="font-bold text-sm text-slate-800">جستجو و استعلام غیبت‌های دانش‌آموز</h4>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" id="admin-att-query" placeholder="کدملی یا نام و نام خانوادگی دانش‌آموز..." class="flex-grow border border-slate-300 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-emerald-600 outline-none">
+                            <button onclick="queryStudentAbsences()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition">
+                                <i class="fa-solid fa-search"></i> جستجو
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center border-b pb-3">
+                            <h4 class="font-bold text-sm text-slate-900">لیست کلی ثبت‌های حضور و غیاب امروز و روزهای قبل</h4>
+                            <button onclick="clearTodayAttendance()" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg transition">
+                                <i class="fa-solid fa-broom"></i> پاکسازی لیست امروز
+                            </button>
+                        </div>
+                        <div id="admin-attendance-results" class="space-y-3"></div>
+                    </div>
+                </div>
+
+                <!-- 4. REPORT CARDS (ADMIN) -->
+                <div id="admin-sec-report-cards" class="admin-sec hidden space-y-6">
+                    <div class="flex items-center justify-between border-b pb-4">
+                        <h3 class="font-titr text-xl text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-file-invoice text-purple-600"></i> مدیریت و پرینت کارنامه ماهانه دانش‌آموزان
+                        </h3>
+                        <button onclick="backToAdminDashboard()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs px-4 py-2 rounded-xl transition flex items-center gap-1 font-semibold">
+                            <i class="fa-solid fa-arrow-left"></i> بازگشت به پنل
+                        </button>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 shadow-sm">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">کد ملی دانش‌آموز:</label>
+                                <input type="text" id="admin-rc-nationalid" placeholder="کد ملی دانش‌آموز را وارد کنید..." class="w-full border border-slate-300 rounded-xl px-4 py-2 text-xs focus:ring-2 focus:ring-purple-600 outline-none">
+                            </div>
+                            <div class="flex items-end">
+                                <button onclick="loadAdminReportCard()" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">
+                                    <i class="fa-solid fa-search"></i> استعلام و دریافت کارنامه
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="admin-rc-container"></div>
+                </div>
+
+                <!-- 5. NEWS -->
+                <div id="admin-sec-news" class="admin-sec hidden space-y-6">
+                    <div class="flex items-center justify-between border-b pb-4">
+                        <h3 class="font-titr text-xl text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-bullhorn text-amber-600"></i> ثبت اخبار، بیانیه‌ها و گزارش فعالیت‌های مدرسه
+                        </h3>
+                        <button onclick="backToAdminDashboard()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs px-4 py-2 rounded-xl transition flex items-center gap-1 font-semibold">
+                            <i class="fa-solid fa-arrow-left"></i> بازگشت به پنل
+                        </button>
+                    </div>
+
+                    <form id="news-form" onsubmit="handleSaveNews(event)" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <input type="hidden" id="news-edit-index" value="-1">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">عنوان خبر یا بیانیه <span class="text-red-500">*</span></label>
+                            <input type="text" id="ns-title" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-600 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">متن کامل خبر / فعالیت <span class="text-red-500">*</span></label>
+                            <textarea id="ns-text" rows="4" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-600 outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">بارگذاری تصویر خبر</label>
+                            <input type="file" id="ns-photo" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-amber-600 file:text-white hover:file:bg-amber-700">
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition shadow">
+                                <i class="fa-solid fa-paper-plane"></i> انتشار خبر برای عموم
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                        <h4 class="font-bold text-sm text-slate-800 mb-4">لیست اخبار منتشرشده (جهت ویرایش یا حذف روی هر خبر راست‌کلیک کنید)</h4>
+                        <div id="admin-news-list" class="space-y-3"></div>
+                    </div>
+                </div>
+
+                <!-- 6. BARCODE GATE -->
+                <div id="admin-sec-gate-barcode" class="admin-sec hidden space-y-6">
+                    <div class="flex items-center justify-between border-b pb-4">
+                        <h3 class="font-titr text-xl text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-qrcode text-indigo-600"></i> بارکدخوان هوشمند ورود و خروج (ارسال پیامک روبیکا)
+                        </h3>
+                        <button onclick="backToAdminDashboard()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs px-4 py-2 rounded-xl transition flex items-center gap-1 font-semibold">
+                            <i class="fa-solid fa-arrow-left"></i> بازگشت به پنل
+                        </button>
+                    </div>
+
+                    <div class="bg-indigo-900 text-white p-6 rounded-2xl shadow-lg space-y-4">
+                        <p class="text-xs text-indigo-200">کد دانش‌آموزی یا بارکد کارت دانش‌آموز را اسکن یا وارد نمایید تا ثبت حضور و خروج انجام شده و خودکار پیامک اطلاع‌رسانی به شماره اولیا ارسال شود:</p>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" id="barcode-input" placeholder="اسکن بارکد یا ورود کد دانش‌آموزی..." class="flex-grow bg-slate-900 border border-indigo-700 rounded-xl px-4 py-3 text-sm text-white focus:ring-2 focus:ring-gold-500 outline-none">
+                            <button onclick="processBarcodeScan('entry')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-6 py-3 rounded-xl transition shadow">
+                                <i class="fa-solid fa-right-to-bracket"></i> ثبت ورود به مدرسه
+                            </button>
+                            <button onclick="processBarcodeScan('exit')" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-6 py-3 rounded-xl transition shadow">
+                                <i class="fa-solid fa-right-from-bracket"></i> ثبت خروج از مدرسه
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+                        <h4 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-history text-indigo-600"></i> گزارش لحظه‌ای تردد دروازه هوشمند
+                        </h4>
+                        <div id="barcode-log-container" class="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+                            <p class="text-xs text-slate-400 text-center py-4">هنوز ترددی ثبت نشده است.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TEACHER PANEL ================= -->
+        <section id="view-teacher" class="hidden space-y-8 animate-fade-in">
+            <div class="bg-royal-800 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-b-4 border-gold-500">
+                <div class="flex items-center gap-4">
+                    <img id="teacher-panel-avatar" src="" alt="معلم" class="w-14 h-14 rounded-full object-cover border-2 border-gold-400 bg-slate-700 hidden">
+                    <div id="teacher-panel-avatar-icon" class="w-14 h-14 rounded-full bg-gold-500 text-slate-900 flex items-center justify-center text-2xl font-bold">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                    </div>
+                    <div>
+                        <h2 id="teacher-welcome-title" class="font-titr text-2xl text-gold-400">پنل معلمان دبیرستان و هنرستان امام حسن (ع)</h2>
+                        <p id="teacher-welcome-subtitle" class="text-xs text-slate-200">ثبت حضور و غیاب و نمرات ماهانه دانش‌آموزان</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <!-- دکمه ورود به کلاس آنلاین در پنل معلم -->
+                    <button onclick="startTeacherVirtualClass()" class="bg-emerald-600 hover:bg-emerald-700 text-xs text-white px-4 py-2.5 rounded-xl transition flex items-center gap-2 font-bold shadow">
+                        <i class="fa-solid fa-video"></i> ورود به اتاق کلاس آنلاین
+                    </button>
+                    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-xs text-white px-4 py-2.5 rounded-xl transition flex items-center gap-1 font-semibold">
+                        <i class="fa-solid fa-sign-out-alt"></i> خروج
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Attendance Form -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h3 class="font-titr text-lg text-slate-800 flex items-center gap-2 border-b pb-3">
+                        <i class="fa-solid fa-clipboard-user text-royal-600"></i> ثبت حضور و غیاب کلاس
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">کلاس:</label>
+                            <input type="text" id="tc-att-class" placeholder="مثلا ۱۰۱" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">پایه:</label>
+                            <select id="tc-att-grade" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                                <option value="دهم">دهم</option>
+                                <option value="یازدهم">یازدهم</option>
+                                <option value="دوازدهم">دوازدهم</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="loadStudentsForTeacherAttendance()" class="w-full bg-royal-600 hover:bg-royal-700 text-white font-bold text-xs py-2.5 rounded-xl transition">
+                        بارگذاری لیست دانش‌آموزان کلاس
+                    </button>
+                    <div id="teacher-attendance-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+                    <button onclick="submitTeacherAttendance()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl transition shadow">
+                        تایید و ارسال حضور و غیاب برای مدیر
+                    </button>
+                </div>
+
+                <!-- Grades Form -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h3 class="font-titr text-lg text-slate-800 flex items-center gap-2 border-b pb-3">
+                        <i class="fa-solid fa-pen-to-square text-gold-600"></i> ثبت نمرات ماهانه
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">ماه تحصیلی:</label>
+                            <select id="tc-grade-month" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                                <option value="مهر">مهر</option>
+                                <option value="آبان">آبان</option>
+                                <option value="آذر">آذر</option>
+                                <option value="دی">دی</option>
+                                <option value="بهمن">بهمن</option>
+                                <option value="اسفند">اسفند</option>
+                                <option value="فروردین">فروردین</option>
+                                <option value="اردیبهشت">اردیبهشت</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">نام درس / واحد:</label>
+                            <input type="text" id="tc-grade-subject" placeholder="مثلا ریاضی" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">کد ملی دانش‌آموز:</label>
+                            <input type="text" id="tc-grade-st-natid" placeholder="کدملی دانش‌آموز" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">نمره ماهانه (۰ تا ۲۰):</label>
+                        <input type="number" step="0.25" min="0" max="20" id="tc-grade-value" placeholder="مثلا 18.5" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs">
+                    </div>
+                    <button onclick="submitTeacherGrade()" class="w-full bg-gold-500 hover:bg-gold-600 text-slate-950 font-bold text-xs py-2.5 rounded-xl transition shadow">
+                        ثبت و ارسال نمره به کارنامه مدیر
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STUDENT PANEL ================= -->
+        <section id="view-student" class="hidden space-y-8 animate-fade-in">
+            <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 border-b-4 border-gold-500">
+                <div class="flex items-center gap-4">
+                    <img id="student-panel-avatar" src="" alt="دانش‌آموز" class="w-14 h-14 rounded-full object-cover border-2 border-gold-400 bg-slate-800 hidden">
+                    <div id="student-panel-avatar-icon" class="w-14 h-14 rounded-full bg-gold-500 text-slate-900 flex items-center justify-center text-2xl font-bold">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h2 id="student-welcome-title" class="font-titr text-2xl text-gold-400">پنل دانش‌آموزی دبیرستان و هنرستان امام حسن (ع)</h2>
+                        <p id="student-welcome-subtitle" class="text-xs text-slate-300">مشاهده مشخصات و کارنامه ماهانه</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <!-- دکمه ورود به کلاس آنلاین در پنل دانش‌آموز -->
+                    <button onclick="openStudentVirtualClassModal()" class="bg-emerald-600 hover:bg-emerald-700 text-xs text-white px-4 py-2.5 rounded-xl transition flex items-center gap-2 font-bold shadow">
+                        <i class="fa-solid fa-video"></i> انتخاب معلم و ورود به کلاس آنلاین
+                    </button>
+                    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-xs text-white px-4 py-2.5 rounded-xl transition flex items-center gap-1 font-semibold">
+                        <i class="fa-solid fa-sign-out-alt"></i> خروج
+                    </button>
+                </div>
+            </div>
+
+            <div id="student-report-card-container"></div>
+        </section>
+    </main>
+
+    <!-- STUDENT VIRTUAL CLASS MODAL (مخصوص انتخاب معلم توسط دانش‌آموز داخل پنل) -->
+    <div id="student-vc-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl relative border-t-4 border-emerald-600">
+            <button onclick="closeStudentVirtualClassModal()" class="absolute left-4 top-4 text-slate-400 hover:text-slate-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center space-y-2">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                </div>
+                <h3 class="font-titr text-xl text-slate-900">انتخاب معلم جهت ورود به کلاس آنلاین</h3>
+                <p class="text-xs text-slate-500">لطفاً استاد مورد نظر خود را از لیست زیر انتخاب کنید</p>
+            </div>
+
+            <div id="student-vc-teachers-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                <!-- لیست معلمان -->
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl relative border-t-4 border-gold-500">
+            <button onclick="closeLoginModal()" class="absolute left-4 top-4 text-slate-400 hover:text-slate-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-2xl bg-gold-500/10 text-gold-600 mx-auto flex items-center justify-center text-xl">
+                    <i id="login-modal-icon" class="fa-solid fa-user-shield"></i>
+                </div>
+                <h3 id="login-modal-title" class="font-titr text-xl text-slate-900">ورود مدیر</h3>
+                <p id="login-modal-desc" class="text-xs text-slate-500">لطفاً اطلاعات ورود خود را وارد نمایید</p>
+            </div>
+
+            <form id="login-form-element" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <input type="hidden" id="login-role-type" value="admin">
+                <div id="login-field-container">
+                    <label id="login-label-text" class="block text-xs font-bold text-slate-700 mb-1">رمز عبور مدیر:</label>
+                    <input type="password" id="login-input-value" required class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-gold-500 outline-none">
+                </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-gold-400 font-bold text-sm py-3 rounded-xl transition shadow">
+                    ورود به سامانه
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- CHANGE PASSWORD MODAL -->
+    <div id="change-pass-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl relative">
+            <button onclick="closeChangePasswordModal()" class="absolute left-4 top-4 text-slate-400 hover:text-slate-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="font-titr text-lg text-slate-900">تغییر رمز عبور مدیر</h3>
+            <form onsubmit="handleChangePassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">رمز عبور جدید:</label>
+                    <input type="password" id="new-admin-pass" required class="w-full border border-slate-300 rounded-xl px-4 py-2 text-sm">
+                </div>
+                <button type="submit" class="w-full bg-gold-500 hover:bg-gold-600 text-slate-950 font-bold text-xs py-3 rounded-xl">ذخیره رمز عبور جدید</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-navy-900 text-slate-400 text-xs py-8 border-t border-gold-500/20 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="font-titr text-gold-400 text-sm">دبیرستان و هنرستان امام حسن (ع)</p>
+            <p>تمامی حقوق محفوظ و متعلق به سامانه جامع آموزشی و مدیریتی مدرسه است.</p>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script>
+        let adminPassword = localStorage.getItem('imam_admin_pass') || 'zxcv1234zxcv';
+        let students = JSON.parse(localStorage.getItem('imam_students')) || [];
+        let teachers = JSON.parse(localStorage.getItem('imam_teachers')) || [];
+        let newsList = JSON.parse(localStorage.getItem('imam_news')) || [
+            { id: 1, title: 'آغاز ثبت‌نام کلاس‌های مهارتی هنرستان', text: 'ثبت‌نام رشته‌های فنی و مهارتی دبیرستان و هنرستان امام حسن (ع) برای سال تحصیلی جدید آغاز شد.', date: '1405/04/01', photo: '' }
+        ];
+        let attendanceLogs = JSON.parse(localStorage.getItem('imam_attendance')) || [];
+        let gradesList = JSON.parse(localStorage.getItem('imam_grades')) || [];
+        let gateLogs = JSON.parse(localStorage.getItem('imam_gate_logs')) || [];
+
+        let currentUser = null;
+        let contextMenuTarget = { type: '', index: -1 };
+
+        function saveData() {
+            localStorage.setItem('imam_admin_pass', adminPassword);
+            localStorage.setItem('imam_students', JSON.stringify(students));
+            localStorage.setItem('imam_teachers', JSON.stringify(teachers));
+            localStorage.setItem('imam_news', JSON.stringify(newsList));
+            localStorage.setItem('imam_attendance', JSON.stringify(attendanceLogs));
+            localStorage.setItem('imam_grades', JSON.stringify(gradesList));
+            localStorage.setItem('imam_gate_logs', JSON.stringify(gateLogs));
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `p-4 rounded-xl shadow-lg text-white text-xs font-bold transition transform translate-y-2 flex items-center gap-2 ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-triangle-exclamation'}"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // ورود معلم به کلاس آنلاین خود
+        function startTeacherVirtualClass() {
+            if (!currentUser || currentUser.role !== 'teacher') return;
+            const tc = currentUser.data;
+            const roomName = `ImamHassanTeacher-${encodeURIComponent(tc.nationalId)}`;
+            const jitsiUrl = `https://meet.jit.si/${roomName}#userInfo.displayName="${encodeURIComponent('استاد ' + tc.fullName)}"`;
+
+            showToast(`در حال ورود به اتاق آنلاین تدریس...`);
+            window.open(jitsiUrl, '_blank');
+        }
+
+        // باز کردن مودال انتخاب معلم در پنل دانش‌آموز
+        function openStudentVirtualClassModal() {
+            if (teachers.length === 0) {
+                showToast('هنوز هیچ معلمی در سیستم مدرسه ثبت نشده است.', 'error');
+                return;
+            }
+
+            const listContainer = document.getElementById('student-vc-teachers-list');
+            listContainer.innerHTML = teachers.map((tc, idx) => `
+                <button onclick="studentJoinTeacherRoom(${idx})" class="w-full text-right p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition flex items-center justify-between group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-slate-800 group-hover:text-emerald-700">استاد ${tc.fullName}</h4>
+                            <p class="text-[10px] text-slate-500">کلاس‌ها: ${tc.classes || 'نامشخص'}</p>
+                        </div>
+                    </div>
+                    <span class="text-[11px] bg-emerald-600 text-white px-3 py-1 rounded-lg font-medium group-hover:bg-emerald-700">
+                        ورود به کلاس <i class="fa-solid fa-arrow-left text-[9px] mr-1"></i>
+                    </span>
+                </button>
+            `).join('');
+
+            document.getElementById('student-vc-modal').classList.remove('hidden');
+        }
+
+        function closeStudentVirtualClassModal() {
+            document.getElementById('student-vc-modal').classList.add('hidden');
+        }
+
+        // اتصال دانش‌آموز به اتاق معلم انتخاب شده
+        function studentJoinTeacherRoom(teacherIndex) {
+            if (!currentUser || currentUser.role !== 'student') return;
+            const tc = teachers[teacherIndex];
+            const st = currentUser.data;
+
+            const roomName = `ImamHassanTeacher-${encodeURIComponent(tc.nationalId)}`;
+            const jitsiUrl = `https://meet.jit.si/${roomName}#userInfo.displayName="${encodeURIComponent(st.fullName + ' (دانش‌آموز)')}"`;
+
+            showToast(`در حال اتصال به کلاس آنلاین استاد ${tc.fullName}...`);
+            closeStudentVirtualClassModal();
+            window.open(jitsiUrl, '_blank');
+        }
+
+        function switchView(viewName) {
+            const views = ['view-public', 'view-admin', 'view-teacher', 'view-student'];
+            views.forEach(v => {
+                const el = document.getElementById(v);
+                el.classList.add('hidden');
+                el.classList.remove('animate-fade-in');
+            });
+
+            const target = document.getElementById(`view-${viewName}`);
+            target.classList.remove('hidden');
+            target.classList.add('animate-fade-in');
+
+            if (viewName === 'public') {
+                renderPublicNews();
+            } else if (viewName === 'admin') {
+                backToAdminDashboard();
+            } else if (viewName === 'student') {
+                renderStudentPanelReportCard();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function openLoginModal(role) {
+            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('login-role-type').value = role;
+            const titleEl = document.getElementById('login-modal-title');
+            const descEl = document.getElementById('login-modal-desc');
+            const labelEl = document.getElementById('login-label-text');
+            const iconEl = document.getElementById('login-modal-icon');
+
+            if (role === 'admin') {
+                titleEl.textContent = 'ورود مدیریت';
+                descEl.textContent = 'لطفاً رمز عبور مدیر را وارد کنید';
+                labelEl.textContent = 'رمز عبور مدیر:';
+                iconEl.className = 'fa-solid fa-user-shield';
+                document.getElementById('login-input-value').type = 'password';
+                document.getElementById('login-input-value').placeholder = 'رمز عبور مدیریت...';
+            } else if (role === 'teacher') {
+                titleEl.textContent = 'ورود معلمان و فرهنگیان';
+                descEl.textContent = 'کد ملی یا کد پرسنلی خود را وارد کنید';
+                labelEl.textContent = 'کد ملی یا کد پرسنلی:';
+                iconEl.className = 'fa-solid fa-chalkboard-user';
+                document.getElementById('login-input-value').type = 'text';
+                document.getElementById('login-input-value').placeholder = 'مثلا کد ملی یا پرسنلی...';
+            } else if (role === 'student') {
+                titleEl.textContent = 'ورود دانش‌آموزان';
+                descEl.textContent = 'کد ملی یا کد دانش‌آموزی خود را وارد کنید';
+                labelEl.textContent = 'کد ملی یا کد دانش‌آموزی:';
+                iconEl.className = 'fa-solid fa-graduation-cap';
+                document.getElementById('login-input-value').type = 'text';
+                document.getElementById('login-input-value').placeholder = 'کد ملی یا کد دانش‌آموزی...';
+            }
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('login-input-value').value = '';
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const role = document.getElementById('login-role-type').value;
+            const val = document.getElementById('login-input-value').value.trim();
+
+            if (role === 'admin') {
+                if (val === adminPassword) {
+                    currentUser = { role: 'admin' };
+                    closeLoginModal();
+                    switchView('admin');
+                    showToast('با موفقیت به پنل مدیریت وارد شدید.');
+                } else {
+                    showToast('رمز عبور مدیر اشتباه است!', 'error');
+                }
+            } else if (role === 'teacher') {
+                const found = teachers.find(t => t.nationalId === val || t.pCode === val);
+                if (found) {
+                    currentUser = { role: 'teacher', data: found };
+                    closeLoginModal();
+                    switchView('teacher');
+                    setupTeacherPanel();
+                    showToast(`خوش آمدید، استاد ${found.fullName}`);
+                } else {
+                    showToast('کد ملی یا کد پرسنلی معلم در سیستم ثبت نشده است!', 'error');
+                }
+            } else if (role === 'student') {
+                const found = students.find(s => s.nationalId === val || s.code === val);
+                if (found) {
+                    currentUser = { role: 'student', data: found };
+                    closeLoginModal();
+                    switchView('student');
+                    setupStudentPanel();
+                    showToast(`خوش آمدید، ${found.fullName}`);
+                } else {
+                    showToast('دانش‌آموزی با این مشخصات یافت نشد!', 'error');
+                }
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            switchView('public');
+            showToast('از پنل خارج شدید.');
+        }
+
+        function renderPublicNews() {
+            const grid = document.getElementById('public-news-grid');
+            if (newsList.length === 0) {
+                grid.innerHTML = '<p class="text-slate-500 text-xs col-span-3 text-center py-8">هیچ اطلاعیه‌ای موجود نیست.</p>';
+                return;
+            }
+            grid.innerHTML = newsList.map(n => `
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm modern-card flex flex-col">
+                    ${n.photo ? `<img src="${n.photo}" alt="${n.title}" class="w-full h-48 object-cover">` : ''}
+                    <div class="p-6 flex flex-col flex-grow justify-between space-y-3">
+                        <div>
+                            <span class="text-[10px] bg-gold-500/10 text-gold-600 font-bold px-2.5 py-1 rounded-full">${n.date}</span>
+                            <h4 class="font-bold text-slate-900 mt-2 text-base">${n.title}</h4>
+                            <p class="text-xs text-slate-600 mt-1 leading-relaxed">${n.text}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showAdminSection(secName) {
+            document.getElementById('admin-dashboard-menu').classList.add('hidden');
+            document.querySelectorAll('.admin-sec').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('animate-fade-in');
+            });
+            const targetSec = document.getElementById(`admin-sec-${secName}`);
+            targetSec.classList.remove('hidden');
+            targetSec.classList.add('animate-fade-in');
+
+            if (secName === 'students') renderStudentsTable();
+            if (secName === 'teachers') renderTeachersTable();
+            if (secName === 'attendance') renderAdminAttendanceLogs();
+            if (secName === 'news') renderAdminNewsList();
+            if (secName === 'gate-barcode') renderGateLogs();
+        }
+
+        function backToAdminDashboard() {
+            document.getElementById('admin-dashboard-menu').classList.remove('hidden');
+            document.querySelectorAll('.admin-sec').forEach(el => el.classList.add('hidden'));
+        }
+
+        function handleSaveStudent(e) {
+            e.preventDefault();
+            const editIdx = parseInt(document.getElementById('student-edit-index').value);
+            const photoInput = document.getElementById('st-photo');
+            
+            const saveObj = {
+                fullName: document.getElementById('st-fullname').value,
+                nationalId: document.getElementById('st-nationalid').value,
+                code: document.getElementById('st-code').value,
+                phone1: document.getElementById('st-phone1').value,
+                phone2: document.getElementById('st-phone2').value,
+                sClass: document.getElementById('st-class').value,
+                grade: document.getElementById('st-grade').value,
+                photo: editIdx >= 0 ? students[editIdx].photo : ''
+            };
+
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    saveObj.photo = evt.target.result;
+                    finalizeStudentSave(saveObj, editIdx);
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                finalizeStudentSave(saveObj, editIdx);
+            }
+        }
+
+        function finalizeStudentSave(obj, idx) {
+            if (idx >= 0) {
+                students[idx] = obj;
+                showToast('اطلاعات دانش‌آموز ویرایش شد.');
+            } else {
+                students.push(obj);
+                showToast('دانش‌آموز جدید ثبت شد.');
+            }
+            saveData();
+            document.getElementById('student-form').reset();
+            document.getElementById('student-edit-index').value = '-1';
+            renderStudentsTable();
+        }
+
+        function renderStudentsTable() {
+            const queryName = document.getElementById('src-st-name').value.toLowerCase();
+            const queryNatId = document.getElementById('src-st-nationalid').value;
+            const queryCode = document.getElementById('src-st-code').value;
+            const tbody = document.getElementById('students-table-body');
+
+            const filtered = students.filter(s => {
+                return (!queryName || s.fullName.toLowerCase().includes(queryName)) &&
+                       (!queryNatId || s.nationalId.includes(queryNatId)) &&
+                       (!queryCode || s.code.includes(queryCode));
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-400">هیچ دانش‌آموزی یافت نشد.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map((s, idx) => `
+                <tr class="hover:bg-slate-50 cursor-context" oncontextmenu="openContextMenu(event, 'student', ${idx})">
+                    <td class="p-3">
+                        ${s.photo ? `<img src="${s.photo}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs"><i class="fa-solid fa-user"></i></div>`}
+                    </td>
+                    <td class="p-3 font-bold text-slate-900">${s.fullName}</td>
+                    <td class="p-3 text-slate-600">${s.nationalId}</td>
+                    <td class="p-3 text-slate-600">${s.code}</td>
+                    <td class="p-3 text-slate-600">${s.grade} - ${s.sClass}</td>
+                    <td class="p-3 text-slate-600">${s.phone1 || '-'}</td>
+                    <td class="p-3 flex gap-2">
+                        <button onclick="editStudent(${idx})" class="text-royal-600 hover:text-royal-800 font-bold"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteStudent(${idx})" class="text-red-600 hover:text-red-800 font-bold"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editStudent(idx) {
+            const s = students[idx];
+            document.getElementById('st-fullname').value = s.fullName;
+            document.getElementById('st-nationalid').value = s.nationalId;
+            document.getElementById('st-code').value = s.code;
+            document.getElementById('st-phone1').value = s.phone1;
+            document.getElementById('st-phone2').value = s.phone2;
+            document.getElementById('st-class').value = s.sClass;
+            document.getElementById('st-grade').value = s.grade;
+            document.getElementById('student-edit-index').value = idx;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteStudent(idx) {
+            const st = students[idx];
+            if (!st) return;
+
+            if (confirm(`آیا از حذف دانش‌آموز «${st.fullName}» و تمامی نمرات و کارنامه‌های او اطمینان دارید؟`)) {
+                const targetNationalId = st.nationalId;
+
+                students.splice(idx, 1);
+                gradesList = gradesList.filter(g => g.nationalId !== targetNationalId);
+                attendanceLogs = attendanceLogs.filter(a => a.nationalId !== targetNationalId);
+
+                saveData();
+                renderStudentsTable();
+
+                const rcContainer = document.getElementById('admin-rc-container');
+                if (rcContainer) {
+                    rcContainer.innerHTML = '';
+                }
+
+                showToast(`دانش‌آموز «${st.fullName}» و تمامی سوابق او با موفقیت حذف شدند.`);
+            }
+        }
+
+        function exportStudentsExcel() {
+            const ws = XLSX.utils.json_to_sheet(students);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Students");
+            XLSX.writeFile(wb, "Students_ImamHassan.xlsx");
+            showToast('فایل اکسل دانش‌آموزان دانلود شد.');
+        }
+
+        function handleSaveTeacher(e) {
+            e.preventDefault();
+            const editIdx = parseInt(document.getElementById('teacher-edit-index').value);
+            const photoInput = document.getElementById('tc-photo');
+
+            const saveObj = {
+                fullName: document.getElementById('tc-fullname').value,
+                nationalId: document.getElementById('tc-nationalid').value,
+                pCode: document.getElementById('tc-pcode').value,
+                phone: document.getElementById('tc-phone').value,
+                classes: document.getElementById('tc-classes').value,
+                grades: document.getElementById('tc-grades').value,
+                photo: editIdx >= 0 ? teachers[editIdx].photo : ''
+            };
+
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    saveObj.photo = evt.target.result;
+                    finalizeTeacherSave(saveObj, editIdx);
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                finalizeTeacherSave(saveObj, editIdx);
+            }
+        }
+
+        function finalizeTeacherSave(obj, idx) {
+            if (idx >= 0) {
+                teachers[idx] = obj;
+                showToast('اطلاعات معلم ویرایش شد.');
+            } else {
+                teachers.push(obj);
+                showToast('معلم جدید ثبت شد.');
+            }
+            saveData();
+            document.getElementById('teacher-form').reset();
+            document.getElementById('teacher-edit-index').value = '-1';
+            renderTeachersTable();
+        }
+
+        function renderTeachersTable() {
+            const qName = document.getElementById('src-tc-name').value.toLowerCase();
+            const qNatId = document.getElementById('src-tc-nationalid').value;
+            const qPCode = document.getElementById('src-tc-pcode').value;
+            const tbody = document.getElementById('teachers-table-body');
+
+            const filtered = teachers.filter(t => {
+                return (!qName || t.fullName.toLowerCase().includes(qName)) &&
+                       (!qNatId || t.nationalId.includes(qNatId)) &&
+                       (!qPCode || (t.pCode && t.pCode.includes(qPCode)));
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-400">هیچ معلمی یافت نشد.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map((t, idx) => `
+                <tr class="hover:bg-slate-50 cursor-context" oncontextmenu="openContextMenu(event, 'teacher', ${idx})">
+                    <td class="p-3">
+                        ${t.photo ? `<img src="${t.photo}" class="w-8 h-8 rounded-full object-cover">` : `<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs"><i class="fa-solid fa-user"></i></div>`}
+                    </td>
+                    <td class="p-3 font-bold text-slate-900">${t.fullName}</td>
+                    <td class="p-3 text-slate-600">${t.nationalId}</td>
+                    <td class="p-3 text-slate-600">${t.pCode || '-'}</td>
+                    <td class="p-3 text-slate-600">${t.phone}</td>
+                    <td class="p-3 text-slate-600">${t.classes} (${t.grades})</td>
+                    <td class="p-3 flex gap-2">
+                        <button onclick="editTeacher(${idx})" class="text-gold-600 hover:text-gold-800 font-bold"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteTeacher(${idx})" class="text-red-600 hover:text-red-800 font-bold"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editTeacher(idx) {
+            const t = teachers[idx];
+            document.getElementById('tc-fullname').value = t.fullName;
+            document.getElementById('tc-nationalid').value = t.nationalId;
+            document.getElementById('tc-pcode').value = t.pCode;
+            document.getElementById('tc-phone').value = t.phone;
+            document.getElementById('tc-classes').value = t.classes;
+            document.getElementById('tc-grades').value = t.grades;
+            document.getElementById('teacher-edit-index').value = idx;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteTeacher(idx) {
+            if (confirm('آیا از حذف این معلم اطمینان دارید؟')) {
+                teachers.splice(idx, 1);
+                saveData();
+                renderTeachersTable();
+                showToast('معلم حذف شد.');
+            }
+        }
+
+        function exportTeachersExcel() {
+            const ws = XLSX.utils.json_to_sheet(teachers);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Teachers");
+            XLSX.writeFile(wb, "Teachers_ImamHassan.xlsx");
+            showToast('فایل اکسل معلمان دانلود شد.');
+        }
+
+        function renderAdminAttendanceLogs() {
+            const container = document.getElementById('admin-attendance-results');
+            if (attendanceLogs.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6">هیچ گزارش حضور و غیابی ثبت نشده است.</p>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-slate-800 text-slate-200">
+                            <tr>
+                                <th class="p-3">تاریخ</th>
+                                <th class="p-3">کلاس / پایه</th>
+                                <th class="p-3">کد ملی</th>
+                                <th class="p-3">دانش‌آموز</th>
+                                <th class="p-3">وضعیت</th>
+                                <th class="p-3">عملیات (حذف)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            ${attendanceLogs.map((log, idx) => {
+                                const st = students.find(s => s.nationalId === log.nationalId);
+                                const stName = st ? st.fullName : 'دانش‌آموز ثبت‌نشده';
+                                return `
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="p-3 text-slate-600">${log.date}</td>
+                                        <td class="p-3 text-slate-600">${log.sClass || 'مشخص نشده'}</td>
+                                        <td class="p-3 text-slate-600">${log.nationalId}</td>
+                                        <td class="p-3 font-bold text-slate-900">${stName}</td>
+                                        <td class="p-3">
+                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${log.status === 'present' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">
+                                                ${log.status === 'present' ? 'حاضر' : 'غایب'}
+                                            </span>
+                                        </td>
+                                        <td class="p-3">
+                                            <button onclick="deleteAttendanceLog(${idx})" class="text-red-600 hover:text-red-800 text-xs font-bold bg-red-50 px-2.5 py-1 rounded-lg transition">
+                                                <i class="fa-solid fa-trash"></i> حذف این مورد
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function deleteAttendanceLog(index) {
+            if (confirm('آیا از حذف این رکورد حضور و غیاب اطمینان دارید؟')) {
+                attendanceLogs.splice(index, 1);
+                saveData();
+                renderAdminAttendanceLogs();
+                showToast('رکورد حضور و غیاب با موفقیت حذف شد.');
+            }
+        }
+
+        function clearTodayAttendance() {
+            const todayStr = new Date().toLocaleDateString('fa-IR');
+            if (confirm(`آیا از حذف تمامی رکوردهای حضور و غیاب امروز (${todayStr}) اطمینان دارید؟`)) {
+                attendanceLogs = attendanceLogs.filter(a => a.date !== todayStr);
+                saveData();
+                renderAdminAttendanceLogs();
+                showToast('لیست حضور و غیاب امروز بروزرسانی و پاکسازی شد.');
+            }
+        }
+
+        function queryStudentAbsences() {
+            const q = document.getElementById('admin-att-query').value.trim().toLowerCase();
+            const container = document.getElementById('admin-attendance-results');
+            if (!q) {
+                container.innerHTML = '<p class="text-xs text-red-500 text-center py-4">لطفاً کدملی یا نام دانش‌آموز را وارد کنید.</p>';
+                return;
+            }
+
+            const foundSt = students.find(s => s.nationalId.toLowerCase() === q || s.fullName.toLowerCase().includes(q));
+            if (!foundSt) {
+                container.innerHTML = '<p class="text-xs text-slate-500 text-center py-4">دانش‌آموزی با این مشخصات یافت نشد.</p>';
+                return;
+            }
+
+            const absLogs = attendanceLogs.filter(a => a.nationalId === foundSt.nationalId && a.status === 'absent');
+            if (absLogs.length === 0) {
+                container.innerHTML = `<p class="text-xs text-emerald-600 font-bold text-center py-4">دانش‌آموز ${foundSt.fullName} هیچ غیبتی در سیستم ثبت نکرده است.</p>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <h4 class="font-bold text-sm text-slate-900 mb-3">تاریخچه غیبت‌های ${foundSt.fullName} (کدملی: ${foundSt.nationalId})</h4>
+                <ul class="space-y-2">
+                    ${absLogs.map(l => `<li class="bg-red-50 text-red-700 text-xs p-3 rounded-xl flex justify-between items-center font-medium"><span>کلاس: ${l.sClass}</span><span>تاریخ ثبت: ${l.date}</span></li>`).join('')}
+                </ul>
+            `;
+        }
+
+        function loadAdminReportCard() {
+            const natId = document.getElementById('admin-rc-nationalid').value.trim();
+            const container = document.getElementById('admin-rc-container');
+            const st = students.find(s => s.nationalId === natId);
+
+            if (!st) {
+                container.innerHTML = '<p class="text-xs text-red-500 text-center py-4">دانش‌آموزی با این کدملی یافت نشد.</p>';
+                return;
+            }
+
+            const stGrades = gradesList.filter(g => g.nationalId === natId);
+            const months = ['مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند', 'فروردین', 'اردیبهشت'];
+
+            container.innerHTML = `
+                <div id="printable-report-card" class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6 mt-4">
+                    <div class="flex justify-between items-center border-b-2 border-slate-900 pb-4">
+                        <div class="flex items-center gap-4">
+                            ${st.photo ? `<img src="${st.photo}" class="w-16 h-16 rounded-full object-cover border-2 border-gold-500">` : ''}
+                            <div>
+                                <h3 class="font-titr text-xl text-slate-900">دبیرستان و هنرستان امام حسن (ع)</h3>
+                                <p class="text-xs text-slate-600">کارنامه ماهانه تحصیلی</p>
+                            </div>
+                        </div>
+                        <div class="text-left text-xs space-y-1 font-medium">
+                            <p><strong>نام دانش‌آموز:</strong> ${st.fullName}</p>
+                            <p><strong>کد ملی:</strong> ${st.nationalId}</p>
+                            <p><strong>پایه و کلاس:</strong> ${st.grade} - ${st.sClass}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        ${months.map(m => {
+                            const mGrades = stGrades.filter(g => g.month === m);
+                            if (mGrades.length === 0) return '';
+                            return `
+                                <div>
+                                    <h4 class="font-bold text-xs text-royal-700 bg-royal-50 p-2 rounded-lg mb-2">ماه: ${m}</h4>
+                                    <table class="w-full text-xs text-right border border-slate-200">
+                                        <thead class="bg-slate-100 text-slate-700">
+                                            <tr><th class="p-2 border">درس / واحد</th><th class="p-2 border">نمره ثبت‌شده</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            ${mGrades.map(g => `<tr><td class="p-2 border">${g.subject}</td><td class="p-2 border font-bold">${g.score}</td></tr>`).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <div class="flex justify-between items-end pt-8 border-t border-slate-200 text-xs">
+                        <div>
+                            <p class="text-slate-500">تاریخ چاپ: ${new Date().toLocaleDateString('fa-IR')}</p>
+                        </div>
+                        <div class="text-center space-y-2">
+                            <p class="font-bold text-slate-900">مهر و امضای مدیریت دبیرستان و هنرستان امام حسن (ع)</p>
+                            <div class="w-32 h-16 border-b border-dashed border-slate-400 mx-auto flex items-center justify-center text-slate-400 font-titr text-[10px]">مهر / امضا</div>
+                        </div>
+                    </div>
+
+                    <div class="text-center pt-4 no-print">
+                        <button onclick="window.print()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition shadow">
+                            <i class="fa-solid fa-print"></i> پرینت رسمی کارنامه
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleSaveNews(e) {
+            e.preventDefault();
+            const editIdx = parseInt(document.getElementById('news-edit-index').value);
+            const photoInput = document.getElementById('ns-photo');
+
+            const saveObj = {
+                id: Date.now(),
+                title: document.getElementById('ns-title').value,
+                text: document.getElementById('ns-text').value,
+                date: new Date().toLocaleDateString('fa-IR'),
+                photo: editIdx >= 0 ? newsList[editIdx].photo : ''
+            };
+
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    saveObj.photo = evt.target.result;
+                    finalizeNewsSave(saveObj, editIdx);
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                finalizeNewsSave(saveObj, editIdx);
+            }
+        }
+
+        function finalizeNewsSave(obj, idx) {
+            if (idx >= 0) {
+                newsList[idx] = obj;
+                showToast('خبر ویرایش شد.');
+            } else {
+                newsList.unshift(obj);
+                showToast('خبر جدید منتشر شد.');
+            }
+            saveData();
+            document.getElementById('news-form').reset();
+            document.getElementById('news-edit-index').value = '-1';
+            renderAdminNewsList();
+        }
+
+        function renderAdminNewsList() {
+            const container = document.getElementById('admin-news-list');
+            if (newsList.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">هیچ خبری ثبت نشده است.</p>';
+                return;
+            }
+
+            container.innerHTML = newsList.map((n, idx) => `
+                <div class="p-4 rounded-xl border border-slate-200 flex justify-between items-center bg-slate-50 cursor-context" oncontextmenu="openContextMenu(event, 'news', ${idx})">
+                    <div>
+                        <h5 class="font-bold text-xs text-slate-900">${n.title}</h5>
+                        <p class="text-[10px] text-slate-500 mt-0.5">${n.date}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editNews(${idx})" class="text-amber-600 text-xs font-bold"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="deleteNews(${idx})" class="text-red-600 text-xs font-bold"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function editNews(idx) {
+            const n = newsList[idx];
+            document.getElementById('ns-title').value = n.title;
+            document.getElementById('ns-text').value = n.text;
+            document.getElementById('news-edit-index').value = idx;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteNews(idx) {
+            if (confirm('آیا از حذف این خبر اطمینان دارید؟')) {
+                newsList.splice(idx, 1);
+                saveData();
+                renderAdminNewsList();
+                showToast('خبر حذف شد.');
+            }
+        }
+
+        function processBarcodeScan(type) {
+            const code = document.getElementById('barcode-input').value.trim();
+            if (!code) {
+                showToast('لطفاً بارکد یا کد دانش‌آموزی را وارد کنید.', 'error');
+                return;
+            }
+
+            const st = students.find(s => s.code === code || s.nationalId === code);
+            if (!st) {
+                showToast('دانش‌آموزی با این کد بارکد یافت نشد!', 'error');
+                return;
+            }
+
+            const timeStr = new Date().toLocaleTimeString('fa-IR');
+            const dateStr = new Date().toLocaleDateString('fa-IR');
+            const msg = type === 'entry' ? `دانش‌آموز عزیز ${st.fullName} در ساعت ${timeStr} وارد مدرسه شد.` : `دانش‌آموز عزیز ${st.fullName} در ساعت ${timeStr} از مدرسه خارج شد.`;
+
+            gateLogs.unshift({ name: st.fullName, code: st.code, type: type, time: timeStr, date: dateStr, phone: st.phone1 || st.phone2 });
+            saveData();
+            renderGateLogs();
+
+            document.getElementById('barcode-input').value = '';
+            showToast(`ثبت شد: ${msg} (شبیه‌سازی ارسال پیامک به روبیکای ولی)`);
+        }
+
+        function renderGateLogs() {
+            const container = document.getElementById('barcode-log-container');
+            if (gateLogs.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">هنوز ترددی ثبت نشده است.</p>';
+                return;
+            }
+
+            container.innerHTML = gateLogs.map(l => `
+                <div class="py-3 flex justify-between items-center text-xs">
+                    <div>
+                        <p class="font-bold text-slate-900">${l.name} (کد: ${l.code})</p>
+                        <p class="text-[10px] text-slate-500">شماره اولیا جهت ارسال پیامک روبیکا: ${l.phone || 'ثبت نشده'}</p>
+                    </div>
+                    <div class="text-left">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${l.type === 'entry' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">
+                            ${l.type === 'entry' ? 'ورود به مدرسه' : 'خروج از مدرسه'}
+                        </span>
+                        <p class="text-[10px] text-slate-400 mt-1">${l.date} - ${l.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupTeacherPanel() {
+            const t = currentUser.data;
+            if (t.photo) {
+                document.getElementById('teacher-panel-avatar').src = t.photo;
+                document.getElementById('teacher-panel-avatar').classList.remove('hidden');
+                document.getElementById('teacher-panel-avatar-icon').classList.add('hidden');
+            }
+            document.getElementById('teacher-welcome-title').textContent = `استاد ${t.fullName}`;
+        }
+
+        function loadStudentsForTeacherAttendance() {
+            const c = document.getElementById('tc-att-class').value.trim();
+            const g = document.getElementById('tc-att-grade').value;
+            const listContainer = document.getElementById('teacher-attendance-list');
+
+            const filtered = students.filter(s => s.sClass === c && s.grade === g);
+            if (filtered.length === 0) {
+                listContainer.innerHTML = '<p class="text-xs text-slate-400 text-center py-2">دانش‌آموزی در این کلاس یافت نشد.</p>';
+                return;
+            }
+
+            listContainer.innerHTML = filtered.map(s => `
+                <div class="flex justify-between items-center bg-slate-50 p-2 rounded-xl text-xs">
+                    <span class="font-bold text-slate-800">${s.fullName}</span>
+                    <label class="flex items-center gap-1 cursor-pointer">
+                        <input type="checkbox" value="${s.nationalId}" class="teacher-att-chk w-4 h-4 rounded text-royal-600" checked>
+                        <span>حاضر</span>
+                    </label>
+                </div>
+            `).join('');
+        }
+
+        function submitTeacherAttendance() {
+            const c = document.getElementById('tc-att-class').value.trim();
+            const checkboxes = document.querySelectorAll('.teacher-att-chk');
+            if (checkboxes.length === 0) {
+                showToast('لطفاً ابتدا لیست را بارگذاری کنید.', 'error');
+                return;
+            }
+
+            const todayStr = new Date().toLocaleDateString('fa-IR');
+            checkboxes.forEach(chk => {
+                const natId = chk.value;
+                const isPresent = chk.checked;
+                attendanceLogs.push({
+                    nationalId: natId,
+                    sClass: c,
+                    date: todayStr,
+                    status: isPresent ? 'present' : 'absent'
+                });
+            });
+
+            saveData();
+            showToast('حضور و غیاب با موفقیت برای مدیر ارسال شد.');
+        }
+
+        function submitTeacherGrade() {
+            const month = document.getElementById('tc-grade-month').value;
+            const subject = document.getElementById('tc-grade-subject').value.trim();
+            const natId = document.getElementById('tc-grade-st-natid').value.trim();
+            const score = document.getElementById('tc-grade-value').value;
+
+            if (!subject || !natId || !score) {
+                showToast('لطفاً تمامی فیلدهای نمره را پر کنید.', 'error');
+                return;
+            }
+
+            gradesList.push({
+                month: month,
+                subject: subject,
+                nationalId: natId,
+                score: score
+            });
+
+            saveData();
+            showToast('نمره ماهانه با موفقیت ثبت و به کارنامه مدیر ارسال شد.');
+            document.getElementById('tc-grade-subject').value = '';
+            document.getElementById('tc-grade-st-natid').value = '';
+            document.getElementById('tc-grade-value').value = '';
+        }
+
+        function setupStudentPanel() {
+            const s = currentUser.data;
+            if (s.photo) {
+                document.getElementById('student-panel-avatar').src = s.photo;
+                document.getElementById('student-panel-avatar').classList.remove('hidden');
+                document.getElementById('student-panel-avatar-icon').classList.add('hidden');
+            }
+            document.getElementById('student-welcome-title').textContent = `دانش‌آموز گرامی: ${s.fullName}`;
+        }
+
+        function renderStudentPanelReportCard() {
+            const s = currentUser.data;
+            const container = document.getElementById('student-report-card-container');
+            const stGrades = gradesList.filter(g => g.nationalId === s.nationalId);
+            const months = ['مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند', 'فروردین', 'اردیبهشت'];
+
+            container.innerHTML = `
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+                    <div class="flex justify-between items-center border-b-2 border-slate-900 pb-4">
+                        <div class="flex items-center gap-4">
+                            ${s.photo ? `<img src="${s.photo}" class="w-16 h-16 rounded-full object-cover border-2 border-gold-500">` : ''}
+                            <div>
+                                <h3 class="font-titr text-xl text-slate-900">دبیرستان و هنرستان امام حسن (ع)</h3>
+                                <p class="text-xs text-slate-600">کارنامه ماهانه تحصیلی شخصی</p>
+                            </div>
+                        </div>
+                        <div class="text-left text-xs space-y-1 font-medium">
+                            <p><strong>نام دانش‌آموز:</strong> ${s.fullName}</p>
+                            <p><strong>کد ملی:</strong> ${s.nationalId}</p>
+                            <p><strong>پایه و کلاس:</strong> ${s.grade} - ${s.sClass}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        ${months.map(m => {
+                            const mGrades = stGrades.filter(g => g.month === m);
+                            if (mGrades.length === 0) return '';
+                            return `
+                                <div>
+                                    <h4 class="font-bold text-xs text-royal-700 bg-royal-50 p-2 rounded-lg mb-2">ماه: ${m}</h4>
+                                    <table class="w-full text-xs text-right border border-slate-200">
+                                        <thead class="bg-slate-100 text-slate-700">
+                                            <tr><th class="p-2 border">درس / واحد</th><th class="p-2 border">نمره ثبت‌شده</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            ${mGrades.map(g => `<tr><td class="p-2 border">${g.subject}</td><td class="p-2 border font-bold">${g.score}</td></tr>`).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <div class="text-center pt-4">
+                        <a href="https://my.medu.ir" target="_blank" class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-6 py-3 rounded-xl transition shadow">
+                            <i class="fa-solid fa-globe"></i> ورود به سامانه مای مدیو (My Medu)
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openContextMenu(e, type, index) {
+            e.preventDefault();
+            contextMenuTarget = { type, index };
+            const menu = document.getElementById('context-menu');
+            menu.style.display = 'block';
+            menu.style.left = `${e.pageX}px`;
+            menu.style.top = `${e.pageY}px`;
+        }
+
+        window.addEventListener('click', () => {
+            document.getElementById('context-menu').style.display = 'none';
+        });
+
+        function handleContextMenuAction(action) {
+            const { type, index } = contextMenuTarget;
+            if (action === 'edit') {
+                if (type === 'student') editStudent(index);
+                if (type === 'teacher') editTeacher(index);
+                if (type === 'news') editNews(index);
+            } else if (action === 'delete') {
+                if (type === 'student') deleteStudent(index);
+                if (type === 'teacher') deleteTeacher(index);
+                if (type === 'news') deleteNews(index);
+            }
+        }
+
+        function openChangePasswordModal() {
+            document.getElementById('change-pass-modal').classList.remove('hidden');
+        }
+        function closeChangePasswordModal() {
+            document.getElementById('change-pass-modal').classList.add('hidden');
+        }
+        function handleChangePassword(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('new-admin-pass').value.trim();
+            if (newPass) {
+                adminPassword = newPass;
+                saveData();
+                closeChangePasswordModal();
+                showToast('رمز عبور جدید مدیر با موفقیت ذخیره شد.');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderPublicNews();
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
